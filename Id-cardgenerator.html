@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ID Card Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .step {
+      display: none;
+    }
+    .step.active {
+      display: block;
+    }
+    .id-card {
+      width: 300px;
+      border: 2px solid #000;
+      padding: 10px;
+      margin-top: 20px;
+    }
+    .id-card img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+    }
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+    .section {
+      margin-bottom: 10px;
+    }
+    #preview {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<h2>ID Card Generator</h2>
+
+<div id="form-container">
+  <form id="idForm">
+    <!-- Step 1 -->
+ 
+     <div class="step active" id="step1">
+     <h3> Step1:Company Info </h3>
+    <label>Company Name: <input type="text" name="company" required /></label><br>
+    <label>Company Logo URL: <input type="text" id="companyLogo" /></label><br>
+    <button type="button" onclick="nextStep(1)">Next</button>
+  </div>
+
+
+    <!-- Step 2 -->
+    <div class="step" id="step2">
+      <h3>Step 2: Basic Info</h3>
+      <label>Employee Name: <input type="text" name="name" required /></label><br/>
+      <label>Position: <input type="text" name="position" required /></label><br/>
+      <label>Upload Photo: <input type="file" accept="image/*" name="photo" required onchange="loadPhoto(event)" /></label><br/><br/>
+      <button type="button" onclick="prevStep(2)">Back</button>
+      <button type="button" onclick="nextStep(2)">Next</button>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step" id="step3">
+      <h3>Step 3: More Info</h3>
+      <label>DOB: <input type="date" name="dob" required /></label><br/>
+      <label>Phone: <input type="tel" name="phone" required /></label><br/>
+      <label>Email: <input type="email" name="email" required /></label><br/>
+      <label>Emp ID: <input type="text" name="empId" required /></label><br/>
+      <label>Blood Group: <input type="text" name="bloodGroup" required /></label><br/>
+      <label>Address: <input type="text" name="address" required /></label><br/>
+      <label>Branch: <input type="text" name="branch" required /></label><br/>
+      <label>Emergency Contact: <input type="tel" name="emergency" required /></label><br/>
+      <label>Join Date: <input type="date" name="joinDate" required /></label><br/>
+      <label>Expiry Date: <input type="date" name="expiryDate" required /></label><br/><br/>
+      <button type="button" onclick="prevStep(3)">Back</button>
+      <button type="submit">Submit</button>
+    </div>
+  </form>
+</div>
+
+<!-- Preview -->
+<div id="preview">
+  <h3>Preview</h3>
+    <div class="id-card" id="idCard">
+    <img id="logoPreview" class="logo" src="" alt="Company Logo"/><br/>
+    <div class="section"><strong>Name:</strong> <span id="namePreview"></span></div>
+    <div class="section"><strong>Position:</strong> <span id="positionPreview"></span></div>
+    <img id="photoPreview" src="" alt="Employee Photo"/><br/>
+    <div class="section"><strong>DOB:</strong> <span id="dobPreview"></span></div>
+    <div class="section"><strong>Phone:</strong> <span id="phonePreview"></span></div>
+    <div class="section"><strong>Email:</strong> <span id="emailPreview"></span></div>
+    <div class="section"><strong>Emp ID:</strong> <span id="empIdPreview"></span></div>
+    <div class="section"><strong>Blood Group:</strong> <span id="bloodGroupPreview"></span></div>
+    <div class="section"><strong>Address:</strong> <span id="addressPreview"></span></div>
+    <div class="section"><strong>Branch:</strong> <span id="branchPreview"></span></div>
+    <div class="section"><strong>Emergency Contact:</strong> <span id="emergencyPreview"></span></div>
+    <div class="section"><strong>Join Date:</strong> <span id="joinDatePreview"></span></div>
+    <div class="section"><strong>Expiry Date:</strong> <span id="expiryDatePreview"></span></div>
+  </div><br/>
+
+  <button onclick="editForm()">Edit</button>
+  <button onclick="downloadAsImage()">Download Image</button>
+  <button onclick="downloadAsPDF()">Download PDF</button>
+</div>
+
+<script>
+  const companyLogos = {
+    amazon: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+    flipkart: "https://upload.wikimedia.org/wikipedia/commons/1/12/Flipkart_logo.svg",
+    tcs: "https://upload.wikimedia.org/wikipedia/en/e/e9/Tata_Consultancy_Services_Logo.svg",
+    infosys: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Infosys_logo.svg",
+    wipro: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Wipro_Logo.svg",
+    google: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+    microsoft: "https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg",
+    accenture: "https://upload.wikimedia.org/wikipedia/commons/3/33/Accenture.svg"
+  };
+
+  function nextStep(current) {
+    document.getElementById(`step${current}`).classList.remove("active");
+    document.getElementById(`step${current + 1}`).classList.add("active");
+  }
+
+  function prevStep(current) {
+    document.getElementById(`step${current}`).classList.remove("active");
+    document.getElementById(`step${current - 1}`).classList.add("active");
+  }
+
+  let photoData = "";
+
+  function loadPhoto(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+      photoData = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  }
+
+  document.getElementById("idForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const data = Object.fromEntries(form.entries());
+
+    const logoUrl = companyLogos[data.company.toLowerCase()] || "";
+
+    document.getElementById("logoPreview").src = logoUrl;
+    document.getElementById("namePreview").textContent = data.name;
+    document.getElementById("positionPreview").textContent = data.position;
+    document.getElementById("photoPreview").src = photoData;
+    document.getElementById("dobPreview").textContent = data.dob;
+    document.getElementById("phonePreview").textContent = data.phone;
+    document.getElementById("emailPreview").textContent = data.email;
+    document.getElementById("empIdPreview").textContent = data.empId;
+    document.getElementById("bloodGroupPreview").textContent = data.bloodGroup;
+    document.getElementById("addressPreview").textContent = data.address;
+    document.getElementById("branchPreview").textContent = data.branch;
+    document.getElementById("emergencyPreview").textContent = data.emergency;
+    document.getElementById("joinDatePreview").textContent = data.joinDate;
+    document.getElementById("expiryDatePreview").textContent = data.expiryDate;
+
+    document.getElementById("form-container").style.display = "none";
+    document.getElementById("preview").style.display = "block";
+  });
+
+  function editForm() {
+    document.getElementById("form-container").style.display = "block";
+    document.getElementById("preview").style.display = "none";
+  }
+
+  function downloadAsImage() {
+    html2canvas(document.getElementById("idCard")).then(canvas => {
+      const link = document.createElement("a");
+      link.download = "id-card.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  }
+
+  function downloadAsPDF() {
+    const card = document.getElementById("idCard");
+    html2canvas(card).then(canvas => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF();
+      pdf.addImage(imgData, 'PNG', 10, 10);
+      pdf.save("id-card.pdf");
+    });
+  }
+</script>
+
+<!-- External libraries (only from browser cache/CDN, not downloads) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</body>
+</html>

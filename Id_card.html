@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ID Card Generator</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+    .form-step { display: none; }
+    .form-step.active { display: block; }
+    .id-card { width: 300px; height: auto; border: 1px solid #333; padding: 20px; background: white; margin-bottom: 20px; }
+    .preview { display: flex; flex-direction: column; align-items: center; }
+    .logo { max-height: 50px; margin-bottom: 10px; }
+    .field { margin-bottom: 10px; }
+    .instructions { margin-top: 20px; font-size: 14px; color: #555; }
+    .buttons { margin-top: 20px; display: flex; gap: 10px; }
+    .big-name { font-size: 20px; font-weight: bold; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+  <h1>ID Card Generator</h1>
+
+  <div id="form-container">
+    <form id="idForm">
+      <!-- Step 1: Company Info -->
+      <div class="form-step active" id="step-1">
+        <label>Select Company:</label><br />
+        <select id="company" required>
+          <option value="">--Select Company--</option>
+          <option value="amazon">Amazon</option>
+          <option value="flipkart">Flipkart</option>
+          <option value="tcs">TCS</option>
+          <option value="infosys">Infosys</option>
+          <option value="wipro">Wipro</option>
+          <option value="google">Google</option>
+          <option value="microsoft">Microsoft</option>
+          <option value="accenture">Accenture</option>
+        </select>
+        <br /><br />
+        <button type="button" onclick="goToStep(2)">Next</button>
+      </div>
+
+      <!-- Step 2: Employee Image + Basic Info -->
+      <div class="form-step" id="step-2">
+        <label>Employee Image:</label><br />
+        <input type="file" id="photo" accept="image/*" /><br />
+        <label>Name:</label><br />
+        <input type="text" id="name" required /><br />
+        <label>Position:</label><br />
+        <input type="text" id="position" required /><br />
+        <br />
+        <button type="button" onclick="goToStep(1)">Back</button>
+        <button type="button" onclick="goToStep(3)">Next</button>
+      </div>
+
+      <!-- Step 3: Detailed Info -->
+      <div class="form-step" id="step-3">
+        <label>DOB:</label><br />
+        <input type="date" id="dob" /><br />
+        <label>Phone:</label><br />
+        <input type="text" id="phone" /><br />
+        <label>Email:</label><br />
+        <input type="email" id="email" /><br />
+        <label>Emp ID:</label><br />
+        <input type="text" id="empId" /><br />
+        <label>Blood Group:</label><br />
+        <input type="text" id="bloodGroup" /><br />
+        <label>Address:</label><br />
+        <input type="text" id="address" /><br />
+        <label>Branch Location:</label><br />
+        <input type="text" id="branch" /><br />
+        <label>Emergency Contact:</label><br />
+        <input type="text" id="emergency" /><br />
+        <label>Join Date:</label><br />
+        <input type="date" id="joinDate" /><br />
+        <label>Expiry Date:</label><br />
+        <input type="date" id="expiryDate" /><br /><br />
+        <button type="button" onclick="goToStep(2)">Back</button>
+        <button type="button" onclick="showPreview()">Submit</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="preview" class="preview" style="display:none;">
+    <div class="id-card" id="frontCard">
+      <img id="previewLogo" class="logo" /><br />
+      <div class="big-name" id="previewCompany"></div>
+      <img id="previewPhoto" src="" width="100" /><br />
+      <div><strong>Name:</strong> <span id="previewName"></span></div>
+      <div><strong>Position:</strong> <span id="previewPosition"></span></div>
+    </div>
+
+    <div class="id-card" id="backCard">
+      <div><strong>DOB:</strong> <span id="previewDob"></span></div>
+      <div><strong>Phone:</strong> <span id="previewPhone"></span></div>
+      <div><strong>Email:</strong> <span id="previewEmail"></span></div>
+      <div><strong>Emp ID:</strong> <span id="previewEmpId"></span></div>
+      <div><strong>Blood Group:</strong> <span id="previewBlood"></span></div>
+      <div><strong>Address:</strong> <span id="previewAddress"></span></div>
+      <div><strong>Branch:</strong> <span id="previewBranch"></span></div>
+      <div><strong>Emergency:</strong> <span id="previewEmergency"></span></div>
+      <div><strong>Join Date:</strong> <span id="previewJoin"></span></div>
+      <div><strong>Expiry Date:</strong> <span id="previewExpiry"></span></div>
+      <div class="instructions">Carry this ID card always while on duty.</div>
+    </div>
+
+    <div class="buttons">
+      <button onclick="downloadImage()">Download Image</button>
+      <button onclick="downloadPDF()">Download PDF</button>
+    </div>
+  </div>
+
+  <script>
+    const logos = {
+      amazon: "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",
+      flipkart: "https://upload.wikimedia.org/wikipedia/commons/1/12/Flipkart_logo.svg",
+      tcs: "https://upload.wikimedia.org/wikipedia/en/e/e9/Tata_Consultancy_Services_Logo.svg",
+      infosys: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Infosys_logo.svg",
+      wipro: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Wipro_Logo.svg",
+      google: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg",
+      microsoft: "https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg",
+      accenture: "https://upload.wikimedia.org/wikipedia/commons/3/33/Accenture.svg"
+    };
+
+    function goToStep(step) {
+      document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+      document.getElementById(`step-${step}`).classList.add('active');
+    }
+
+    function showPreview() {
+      const getVal = id => document.getElementById(id).value;
+      const name = getVal('name');
+      const companyKey = getVal('company');
+      const companyName = companyKey.charAt(0).toUpperCase() + companyKey.slice(1);
+      const logo = logos[companyKey];
+
+      document.getElementById('previewCompany').textContent = companyName.toUpperCase();
+      document.getElementById('previewLogo').src = logo || '';
+
+      const photo = document.getElementById('photo').files[0];
+      if (photo) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          document.getElementById('previewPhoto').src = e.target.result;
+        };
+        reader.readAsDataURL(photo);
+      }
+
+      document.getElementById('previewName').textContent = name;
+      document.getElementById('previewPosition').textContent = getVal('position');
+      document.getElementById('previewDob').textContent = getVal('dob');
+      document.getElementById('previewPhone').textContent = getVal('phone');
+      document.getElementById('previewEmail').textContent = getVal('email');
+      document.getElementById('previewEmpId').textContent = getVal('empId');
+      document.getElementById('previewBlood').textContent = getVal('bloodGroup');
+      document.getElementById('previewAddress').textContent = getVal('address');
+      document.getElementById('previewBranch').textContent = getVal('branch');
+      document.getElementById('previewEmergency').textContent = getVal('emergency');
+      document.getElementById('previewJoin').textContent = getVal('joinDate');
+      document.getElementById('previewExpiry').textContent = getVal('expiryDate');
+
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('preview').style.display = 'flex';
+    }
+
+    function downloadImage() {
+      html2canvas(document.getElementById('preview')).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'id-card.png';
+        link.href = canvas.toDataURL();
+        link.click();
+      });
+    }
+
+    function downloadPDF() {
+      const doc = new jsPDF();
+      doc.text("ID Card Details", 10, 10);
+      const lines = [
+        `Company: ${document.getElementById('previewCompany').textContent}`,
+        `Name: ${document.getElementById('previewName').textContent}`,
+        `Position: ${document.getElementById('previewPosition').textContent}`,
+        `DOB: ${document.getElementById('previewDob').textContent}`,
+        `Phone: ${document.getElementById('previewPhone').textContent}`,
+        `Email: ${document.getElementById('previewEmail').textContent}`,
+        `Emp ID: ${document.getElementById('previewEmpId').textContent}`,
+        `Blood Group: ${document.getElementById('previewBlood').textContent}`,
+        `Address: ${document.getElementById('previewAddress').textContent}`,
+        `Branch: ${document.getElementById('previewBranch').textContent}`,
+        `Emergency: ${document.getElementById('previewEmergency').textContent}`,
+        `Join Date: ${document.getElementById('previewJoin').textContent}`,
+        `Expiry Date: ${document.getElementById('previewExpiry').textContent}`,
+      ];
+      lines.forEach((line, i) => doc.text(line, 10, 20 + i * 10));
+      doc.save("id-card.pdf");
+    }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
