@@ -1,4 +1,12 @@
 # Company-ID-CARD-Generator
+# PROJECT LOGIC:
+-It is a form we can fill details of company and emp details to issue an id.
+-U can select company it display company name and logo.
+-Here i save 2 codes of html company id card.
+
+# PROJECT IDEA:
+This idea came from seeing so many company having id's then u can also create own company id card.
+
 🪪 ID Card Generator
 
 A simple multi-step form web application that collects employee details and generates a professional-looking ID card. The generated ID card can be downloaded as a PNG image or PDF file.
