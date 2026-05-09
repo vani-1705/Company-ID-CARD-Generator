@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title> Company ID Card Generator</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
+body{background:#e2e8f0;transition:.4s;color:#111827;}
+.container{display:flex;flex-wrap:wrap;gap:20px;padding:20px;}
+
+/* THEMES */
+body.dark{background:#0f172a;color:white;}
+body.blue{background:#dbeafe;}
+body.purple{background:#f3e8ff;}
+body.green{background:#dcfce7;}
+body.red{background:#fee2e2;}
+body.glass{background:linear-gradient(135deg,#1e293b,#0f172a);}
+body.corporate{background:#f8fafc;}
+
+/* FORM */
+.form-section{
+  flex:1;min-width:340px;background:white;
+  padding:20px;border-radius:20px;
+  box-shadow:0 5px 20px rgba(0,0,0,.1);
+}
+body.dark .form-section{background:#1e293b;}
+body.glass .form-section{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);color:white;}
+
+h1{margin-bottom:20px;}
+.input-box{margin-bottom:16px;position:relative;}
+.input-box label{display:block;margin-bottom:8px;font-weight:bold;}
+.input-box input,
+.input-box select,
+#themeSelector{
+  width:100%;padding:12px;border:none;
+  border-radius:12px;background:#f1f5f9;
+  outline:none;font-size:15px;
+}
+/* intlTelInput fix — wrapper must be full width, inner input auto */
+.iti{width:100%;}
+.iti input{width:100%;}
+body.dark input,
+body.dark select,
+body.dark #themeSelector{background:#334155;color:white;}
+
+/* COMPANY LOGO GRID */
+.company-grid-wrap{
+  background:#f8fafc;
+  border-radius:14px;
+  padding:10px;
+  border:2px solid #e2e8f0;
+}
+body.dark .company-grid-wrap{background:#0f172a;border-color:#334155;}
+
+.company-grid-search{
+  width:100%;padding:9px 12px;
+  border:none;border-radius:10px;
+  background:#fff;outline:none;
+  font-size:14px;margin-bottom:8px;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);
+}
+body.dark .company-grid-search{background:#1e293b;color:white;}
+
+.company-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  max-height:220px;
+  overflow-y:auto;
+  scrollbar-width:thin;
+}
+
+.company-tile{
+  display:flex;flex-direction:column;
+  align-items:center;gap:4px;
+  padding:7px 4px;
+  border-radius:10px;
+  cursor:pointer;
+  border:2px solid transparent;
+  background:white;
+  transition:border .15s, transform .1s, box-shadow .15s;
+}
+body.dark .company-tile{background:#1e293b;}
+.company-tile:hover{
+  border-color:#2563eb;
+  transform:scale(1.05);
+  box-shadow:0 3px 10px rgba(37,99,235,.2);
+}
+.company-tile.selected{
+  border-color:#2563eb;
+  background:#eff6ff;
+  box-shadow:0 3px 12px rgba(37,99,235,.3);
+}
+body.dark .company-tile.selected{background:#1e3a5f;}
+.company-tile img{
+  width:36px;height:36px;
+  object-fit:contain;border-radius:6px;
+}
+.company-tile span{
+  font-size:9px;font-weight:600;
+  text-align:center;line-height:1.2;
+  color:#374151;word-break:break-word;
+}
+body.dark .company-tile span{color:#cbd5e1;}
+
+.selected-company-badge{
+  display:flex;align-items:center;gap:8px;
+  margin-top:8px;padding:8px 12px;
+  background:#eff6ff;border-radius:10px;
+  border:1.5px solid #2563eb;
+  font-size:13px;font-weight:600;color:#1d4ed8;
+}
+body.dark .selected-company-badge{background:#1e3a5f;color:#93c5fd;}
+.selected-company-badge img{width:24px;height:24px;object-fit:contain;border-radius:4px;}
+.selected-company-badge.hidden{display:none;}
+
+/* BUTTONS */
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;}
+.btns button{
+  padding:14px;border:none;border-radius:14px;
+  background:#2563eb;color:white;
+  font-weight:bold;cursor:pointer;font-size:15px;
+  transition:transform .15s;
+}
+.btns button:hover{transform:scale(1.02);}
+
+/* CARD AREA */
+.preview-section{
+  flex:1;display:flex;gap:20px;
+  justify-content:center;flex-wrap:wrap;
+}
+.id-card{
+  width:330px;min-height:560px;background:white;
+  border-radius:20px;overflow:hidden;position:relative;
+  box-shadow:0 10px 20px rgba(0,0,0,.2);
+  display:flex;flex-direction:column;
+}
+body.dark .id-card{background:#1e293b;color:white;}
+body.glass .id-card{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);color:white;}
+
+/* FRONT TOP */
+.top{
+  background:#2563eb;color:white;
+  text-align:center;padding:20px;
+}
+.top-logo-wrap{
+  width:80px;height:80px;
+  border-radius:50%;
+  background:white;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 10px;
+  overflow:hidden;
+  border:3px solid rgba(255,255,255,.3);
+}
+.top-logo-wrap img{
+  width:64px;height:64px;
+  object-fit:contain;border-radius:4px;
+}
+.top h2{font-size:16px;letter-spacing:.02em;}
+
+/* PHOTO */
+.photo-area{text-align:center;margin-top:16px;}
+.photo-area img{
+  width:110px;height:110px;border-radius:50%;
+  object-fit:cover;border:4px solid #2563eb;
+}
+
+/* DETAILS */
+.details{padding:16px 20px;flex:1;}
+.details p{margin-bottom:10px;word-break:break-word;font-size:14px;}
+
+.back-title{
+  background:#2563eb;color:white;
+  text-align:center;padding:16px;
+  font-size:15px;font-weight:bold;letter-spacing:.05em;
+}
+
+.footer{
+  padding:10px;
+  text-align:center;font-size:11.5px;color:gray;
+  background:rgba(0,0,0,.03);
+  border-top:1px solid #f1f5f9;
+  margin-top:auto;
+}
+body.dark .footer{border-top-color:#334155;}
+
+#qrcode{display:flex;justify-content:center;margin-top:12px;}
+
+/* CARD LABEL */
+.card-label{
+  font-size:11px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:#94a3b8;text-align:center;margin-bottom:6px;
+}
+
+/* MOBILE */
+@media(max-width:900px){.container{flex-direction:column;}}
+@media(max-width:500px){.btns{grid-template-columns:1fr;}}
+@media print{
+  .form-section,.card-label{display:none!important;}
+  body{background:white!important;}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- FORM -->
+<div class="form-section">
+  <h1>🏢 Company ID Card Generator</h1>
+
+  <div class="input-box">
+    <label>🎨 Select Theme</label>
+    <select id="themeSelector">
+      <option value="">Light</option>
+      <option value="dark">Dark</option>
+      <option value="blue">Blue</option>
+      <option value="purple">Purple</option>
+      <option value="green">Green</option>
+      <option value="red">Red</option>
+      <option value="glass">Glass</option>
+      <option value="corporate">Corporate</option>
+    </select>
+  </div>
+
+  <!-- HIDDEN companyName for backward compat -->
+  <input type="hidden" id="companyName">
+
+  <div class="input-box">
+    <label>🏢 Select Company</label>
+    <div class="company-grid-wrap">
+      <input type="text" class="company-grid-search" id="companyGridSearch" placeholder="🔍 Search company...">
+      <div class="company-grid" id="companyGrid"></div>
+    </div>
+    <div class="selected-company-badge hidden" id="selectedBadge">
+      <img id="selectedBadgeLogo" src="">
+      <span id="selectedBadgeName">None selected</span>
+    </div>
+  </div>
+
+  <div class="input-box">
+    <label>👤 Employee Photo</label>
+    <input type="file" id="employeePhoto" accept="image/*">
+  </div>
+
+  <div class="input-box">
+    <label>👤 Employee Name</label>
+    <input type="text" id="employeeName" placeholder="Full name">
+  </div>
+  
+  <div class="input-box">
+    <label>👤 Employee ID </label>
+    <input type="text" id="employeeID" placeholder="Employee ID">
+  </div>
+
+  <div class="input-box">
+    <label>💼 Position / Job Role</label>
+    <input type="text" id="jobRole" placeholder="e.g. Software Engineer">
+  </div>
+
+  <div class="input-box">
+    <label>📅 Join Date</label>
+    <input type="date" id="joinDate">
+  </div>
+
+  <div class="input-box">
+    <label>📍 Company Address</label>
+    <input type="text" id="companyAddress" placeholder="Office address">
+  </div>
+
+  <div class="input-box">
+    <label>📅 Date Of Birth</label>
+    <input type="date" id="dob">
+  </div>
+
+  <div class="input-box">
+    <label>🩸 Blood Group</label>
+    <input type="text" id="bloodGroup" placeholder="e.g. O+">
+  </div>
+
+  <div class="input-box">
+    <label>📞 Phone Number</label>
+    <input type="tel" id="phone">
+  </div>
+
+  <div class="input-box">
+    <label>📍 Home Address</label>
+    <input type="text" id="address" placeholder="Residential address">
+  </div>
+
+  <div class="input-box">
+    <label>🚨 Emergency Contact</label>
+    <input type="tel" id="emergency">
+  </div>
+
+  <div class="btns">
+    <button onclick="generateCard()">🚀 Generate</button>
+    <button onclick="downloadPNG()">🖼 PNG</button>
+    <button onclick="downloadPDF()">📄 PDF</button>
+    <button onclick="window.print()">🖨 Print</button>
+  </div>
+</div>
+
+<!-- PREVIEW -->
+<div class="preview-section" id="captureArea">
+
+  <!-- FRONT -->
+  <div>
+    <div class="card-label">FRONT SIDE</div>
+    <div class="id-card">
+      <div class="top">
+        <div class="top-logo-wrap">
+          <img id="frontLogo" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+        </div>
+        <h2 id="frontCompany">Company Name</h2>
+      </div>
+      <div class="photo-area">
+        <img id="frontPhoto" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+      </div>
+      <div class="details">
+        <p><strong>Employee Name :</strong> <span id="frontName">Employee Name</span></p>
+        <p><strong>Employee ID :</strong> <span id="frontID">Employee ID</span></p>
+        <p><strong>Job Role :</strong> <span id="frontRole">Job Role</span></p>
+        <p><strong>Join Date:</strong> <span id="frontJoin">—</span></p>
+        <p><strong>Company Address :</strong> <span id="frontCompanyAddress">—</span></p>
+      </div>
+      <div class="footer">Wear this ID Card at Company</div>
+    </div>
+  </div>
+
+  <!-- BACK -->
+  <div>
+    <div class="card-label">BACK SIDE</div>
+    <div class="id-card">
+      <div class="back-title">Employee Details</div>
+      <div class="details">
+        <p><strong>DOB :</strong> <span id="backDob">—</span></p>
+        <p><strong>Blood Group:</strong> <span id="backBlood">—</span></p>
+        <p><strong>Phone :</strong> <span id="backPhone">—</span></p>
+        <p><strong>Employee Address :</strong> <span id="backAddress">—</span></p>
+        <p><strong>Emergency Contact :</strong> <span id="backEmergency">—</span></p>
+      </div>
+      <div id="qrcode"></div>
+      <div class="footer">If you found this ID card please return it to the owner.</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+
+/* ── LOGO SYSTEM ──
+   Google Favicon API — always works, no CORS block
+   Same system used in Company Logo Finder
+*/
+const defaultLogo = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+
+function logoUrl(domain){
+  // Google Favicon API — high quality, always available
+  return `https://www.google.com/s2/favicons?sz=256&domain_url=${domain}`;
+}
+
+/* ── COMPANY DATABASE ── */
+const companyDomains = {
+"3M":"3m.com",
+"7UP":"7up.com",
+"A24":"a24films.com",
+"Aakash":"aakash.ac.in",
+"ABB":"abb.com",
+"Abbott":"abbott.com",
+"Accenture":"accenture.com",
+"Acer":"acer.com",
+"Activision":"activision.com",
+"Adani":"adani.com",
+"Adidas":"adidas.com",
+"Adobe":"adobe.com",
+"Airtel":"airtel.in",
+"AirAsia":"airasia.com",
+"Airbnb":"airbnb.com",
+"Ajio":"ajio.com",
+"Alibaba":"alibaba.com",
+"Alphabet":"abc.xyz",
+"Amazon":"amazon.com",
+"AMD":"amd.com",
+"American Express":"americanexpress.com",
+"Amul":"amul.com",
+"Android":"android.com",
+"Apple":"apple.com",
+"Asana":"asana.com",
+"Asics":"asics.com",
+"Asus":"asus.com",
+"Atlassian":"atlassian.com",
+"Audi":"audi.com",
+"Axis Bank":"axisbank.com",
+"Bajaj":"bajaj.com",
+"Bata":"bata.com",
+"BBC":"bbc.com",
+"BenQ":"benq.com",
+"BigBasket":"bigbasket.com",
+"Binance":"binance.com",
+"BlackRock":"blackrock.com",
+"Boat":"boat-lifestyle.com",
+"Boeing":"boeing.com",
+"Booking.com":"booking.com",
+"Bosch":"bosch.com",
+"Britannia":"britannia.co.in",
+"Burger King":"burgerking.com",
+"BYJU'S":"byjus.com",
+"Cadbury":"cadbury.com",
+"Canon":"canon.com",
+"Capgemini":"capgemini.com",
+"CarDekho":"cardekho.com",
+"Cartoon Network":"cartoonnetwork.com",
+"Casio":"casio.com",
+"Caterpillar":"cat.com",
+"ChatGPT":"openai.com",
+"Chevrolet":"chevrolet.com",
+"Cisco":"cisco.com",
+"Citibank":"citibank.com",
+"Coca Cola":"coca-cola.com",
+"Cognizant":"cognizant.com",
+"Coinbase":"coinbase.com",
+"Colgate":"colgate.com",
+"Dabur":"dabur.com",
+"Dell":"dell.com",
+"Disney":"disney.com",
+"Discord":"discord.com",
+"Dominos":"dominos.com",
+"Dropbox":"dropbox.com",
+"Duolingo":"duolingo.com",
+"Dyson":"dyson.com",
+"EA Sports":"ea.com",
+"Ebay":"ebay.com",
+"Emirates":"emirates.com",
+"Facebook":"facebook.com",
+"FedEx":"fedex.com",
+"Ferrari":"ferrari.com",
+"Figma":"figma.com",
+"Fiverr":"fiverr.com",
+"Flipkart":"flipkart.com",
+"Ford":"ford.com",
+"GitHub":"github.com",
+"Google":"google.com",
+"HCL":"hcltech.com",
+"Honda":"honda.com",
+"HP":"hp.com",
+"Hyundai":"hyundai.com",
+"IBM":"ibm.com",
+"Infosys":"infosys.com",
+"Instagram":"instagram.com",
+"Intel":"intel.com",
+"Jio":"jio.com",
+"JBL":"jbl.com",
+"KFC":"kfc.com",
+"Kia":"kia.com",
+"Lenovo":"lenovo.com",
+"LG":"lg.com",
+"LinkedIn":"linkedin.com",
+"Mahindra":"mahindra.com",
+"McDonalds":"mcdonalds.com",
+"Meta":"meta.com",
+"Microsoft":"microsoft.com",
+"Myntra":"myntra.com",
+"NASA":"nasa.gov",
+"Netflix":"netflix.com",
+"Nike":"nike.com",
+"Nvidia":"nvidia.com",
+"Ola":"olacabs.com",
+"OnePlus":"oneplus.com",
+"OpenAI":"openai.com",
+"Oracle":"oracle.com",
+"Paytm":"paytm.com",
+"PhonePe":"phonepe.com",
+"Reddit":"reddit.com",
+"Reliance":"ril.com",
+"Samsung":"samsung.com",
+"Sony":"sony.com",
+"Spotify":"spotify.com",
+"Swiggy":"swiggy.com",
+"Starbucks":"starbucks.com",
+"TCS":"tcs.com",
+"Tesla":"tesla.com",
+"Toyota":"toyota.com",
+"Uber":"uber.com",
+"Unacademy":"unacademy.com",
+"Visa":"visa.com",
+"Vivo":"vivo.com",
+"Walmart":"walmart.com",
+"Wipro":"wipro.com",
+"YouTube":"youtube.com",
+"Zoho":"zoho.com",
+"Zomato":"zomato.com"
+}
+
+/* ── THEME ── */
+document.getElementById("themeSelector")
+  .addEventListener("change", function(){
+    document.body.className = this.value;
+  });
+
+/* ── COMPANY LOGO GRID ── */
+const companyInput = document.getElementById("companyName");
+let selectedCompanyName = "";
+let selectedCompanyLogo = "";
+
+function buildGrid(filter){
+  const grid = document.getElementById("companyGrid");
+  grid.innerHTML = "";
+  const low = (filter||"").toLowerCase().trim();
+  const entries = Object.entries(companyDomains);
+  
+  let filtered;
+  if(!low){
+    filtered = entries;
+  } else {
+    const sw = entries.filter(([n])=>n.toLowerCase().startsWith(low));
+    const has = entries.filter(([n])=>!n.toLowerCase().startsWith(low) && n.toLowerCase().includes(low));
+    filtered = [...sw, ...has];
+  }
+
+  filtered.forEach(([name, domain]) => {
+    const logo = logoUrl(domain);
+    const tile = document.createElement("div");
+    tile.className = "company-tile";
+    if(name === selectedCompanyName) tile.classList.add("selected");
+
+    const img = document.createElement("img");
+    img.src = logo;
+    img.loading = "lazy";
+    img.onerror = function(){ this.src = defaultLogo; };
+
+    const span = document.createElement("span");
+    span.textContent = name;
+
+    tile.append(img, span);
+    tile.addEventListener("click", function(){
+      selectCompany(name, logo);
+    });
+    grid.appendChild(tile);
+  });
+}
+
+function selectCompany(name, logo){
+  selectedCompanyName = name;
+  selectedCompanyLogo = logo;
+
+  // Update hidden input (used by generateCard)
+  companyInput.value = name;
+
+  // Update badge
+  const badge = document.getElementById("selectedBadge");
+  badge.classList.remove("hidden");
+  document.getElementById("selectedBadgeLogo").src = logo;
+  document.getElementById("selectedBadgeName").textContent = name;
+
+  // Live update card preview
+  document.getElementById("frontCompany").innerText = name;
+  const fl = document.getElementById("frontLogo");
+  fl.src = logo;
+  fl.onerror = function(){ this.src = defaultLogo; };
+
+  // Highlight selected tile
+  document.querySelectorAll(".company-tile").forEach(t => t.classList.remove("selected"));
+  event.currentTarget.classList.add("selected");
+}
+
+// Search filter
+document.getElementById("companyGridSearch").addEventListener("input", function(){
+  buildGrid(this.value);
+});
+
+// Build on load
+buildGrid("");
+
+/* ── PHOTO ── */
+document.getElementById("employeePhoto")
+  .addEventListener("change", function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById("frontPhoto").src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+/* ── PHONE ── */
+const phoneInput = window.intlTelInput(
+  document.querySelector("#phone"),
+  {
+    initialCountry:"in", separateDialCode:true,
+    utilsScript:"https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+  }
+);
+const emergencyInput = window.intlTelInput(
+  document.querySelector("#emergency"),
+  {
+    initialCountry:"in", separateDialCode:true,
+    utilsScript:"https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+  }
+);
+
+/* ── GENERATE ── */
+function generateCard(){
+
+  document.getElementById("frontName").innerText =
+    document.getElementById("employeeName").value || "—";
+  document.getElementById("frontID").innerText =
+    document.getElementById("employeeID").value || "—";
+  document.getElementById("frontRole").innerText =
+    document.getElementById("jobRole").value || "—";
+  document.getElementById("frontJoin").innerText =
+    document.getElementById("joinDate").value || "—";
+  document.getElementById("frontCompanyAddress").innerText =
+    document.getElementById("companyAddress").value || "—";
+  document.getElementById("backDob").innerText =
+    document.getElementById("dob").value || "—";
+  document.getElementById("backBlood").innerText =
+    document.getElementById("bloodGroup").value || "—";
+  document.getElementById("backPhone").innerText =
+    phoneInput.getNumber() || "—";
+  document.getElementById("backAddress").innerText =
+    document.getElementById("address").value || "—";
+  document.getElementById("backEmergency").innerText =
+    emergencyInput.getNumber() || "—";
+
+  // Auto-match logo if typed without picking suggestion
+  const typed = companyInput.value.trim();
+  // Use grid-selected company
+  if(selectedCompanyName){
+    document.getElementById("frontCompany").innerText = selectedCompanyName;
+    const fl = document.getElementById("frontLogo");
+    fl.src = selectedCompanyLogo || defaultLogo;
+    fl.onerror = function(){ this.src = defaultLogo; };
+  }
+
+  // QR Code
+  document.getElementById("qrcode").innerHTML = "";
+  new QRCode(document.getElementById("qrcode"), {
+    text: `Name: ${document.getElementById("employeeName").value}\nID: ${document.getElementById("employeeID").value} \nCompany: ${companyInput.value}\nRole: ${document.getElementById("jobRole").value}\nPhone: ${phoneInput.getNumber()}`,
+    width:120, height:120
+  });
+
+  alert("✅ ID Card Generated Successfully!");
+}
+
+/* ── PNG ── */
+async function downloadPNG(){
+  generateCard();
+  await new Promise(r => setTimeout(r, 500));
+  const c = await html2canvas(document.getElementById("captureArea"),
+    { scale:2, useCORS:true, allowTaint:true });
+  const a = document.createElement("a");
+  a.download = "company-id-card.png";
+  a.href = c.toDataURL("image/png");
+  a.click();
+}
+
+/* ── PDF ── */
+async function downloadPDF(){
+  generateCard();
+  await new Promise(r => setTimeout(r, 500));
+  const c = await html2canvas(document.getElementById("captureArea"),
+    { scale:2, useCORS:true, allowTaint:true });
+  const imgData = c.toDataURL("image/png");
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p","mm","a4");
+  const pw = 190, ph = (c.height * pw) / c.width;
+  pdf.addImage(imgData,"PNG",10,10,pw,ph);
+  pdf.save("company-id-card.pdf");
+}
+
+// Init grid on load
+buildGrid("");
+</script>
+</body>
+</html>
